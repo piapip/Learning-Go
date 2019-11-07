@@ -34,11 +34,8 @@ func main() {
 	//context.Background() here will be the background for the context.WithCancel
 
 	//	==============================
-	//	|  WithCancel                |
-	//	|  cancel                    |
-	//	|                            |
-	//	|                            |
-	//	|                            |
+	//	|  ctx1 (end when canceled)  |
+	//	|  cancel1                   |
 	//	|                            |
 	//	==============================
 	ctx1, cancel1 := context.WithCancel(context.Background())
@@ -51,6 +48,13 @@ func main() {
 		}
 	}
 
+	//	==============================
+	//	|  ctx1 (end when canceled)  |
+	//	|  cancel1                   |
+	//	|  ctx2 (end after 50ms)     |
+	//	|  cancel2                   |
+	//	==============================
+
 	d := time.Now().Add(50 * time.Millisecond)
 	ctx2, cancel2 := context.WithDeadline(context.Background(), d)
 	defer cancel2()
@@ -61,6 +65,14 @@ func main() {
 	case <-ctx2.Done():
 		fmt.Println(ctx2.Err())
 	}
+
+	//	====================================================
+	//	|  ctx1 (end when canceled)                        |
+	//	|  cancel1                                         |
+	//	|  ctx2 (end after 50ms)                           |
+	//	|  cancel2                                         |
+	//	|  ctx3 (a copy of ctx, store hash value there)    |
+	//	====================================================
 
 	type favContextKey string
 
