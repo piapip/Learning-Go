@@ -1,29 +1,27 @@
 package main
 
-import "fmt"
-
 //unbuffered channel must be woken up by putting it another Goroutine. REMEMBER that main itself is already a Goroutine.
 //buffered channel can work directly from the main function without creating any other Goroutine. But its size is limited.
-func main() {
-	mess := make(chan string)
-	doneChan := make(chan string)
-	go func() {
-		mess <- "Yo"
-		mess <- "pop"
-		mess <- "No more mess"
-	}()
-	go func() {
-		for message := range mess {
-			if message == "No more mess" {
-				close(mess)
-			} else {
-				fmt.Println(message)
-			}
-		}
-		doneChan <- "Dekita"
-	}()
-	<-doneChan
-}
+// func main() {
+// 	mess := make(chan string)
+// 	doneChan := make(chan string)
+// 	go func() {
+// 		mess <- "Yo"
+// 		mess <- "pop"
+// 		mess <- "No more mess"
+// 	}()
+// 	go func() {
+// 		for message := range mess {
+// 			if message == "No more mess" {
+// 				close(mess)
+// 			} else {
+// 				fmt.Println(message)
+// 			}
+// 		}
+// 		doneChan <- "Dekita"
+// 	}()
+// 	<-doneChan
+// }
 
 // func stackExample() {
 // 	stackSlice := make([]byte, 512)
