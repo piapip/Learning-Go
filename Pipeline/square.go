@@ -5,46 +5,62 @@ import (
 	"sync"
 )
 
-func gen(nums ...int) <-chan int {
+func gen(done <-chan struct{}, nums ...int) <-chan int {
 	out := make(chan int)
 	go func() {
+		defer close(out)
 		for _, value := range nums {
-			out <- value
+			select {
+			case out <- value:
+			case <-done:
+				return
+			}
 		}
-		close(out)
 	}()
 	return out
 }
 
-func sq(in <-chan int) <-chan int {
+func sq(done <-chan struct{}, in <-chan int) <-chan int {
 	out := make(chan int)
 	go func() {
+		defer close(out)
 		for value := range in {
-			out <- value * value
+			select {
+			case out <- value * value:
+			case <-done:
+				return
+			}
 		}
-		close(out)
 	}()
 	return out
 }
 
-func merge(done <-chan struct{}, fraction ...<-chan int) <-chan int {
+func merge(done <-chan struct{}, fractions ...<-chan int) <-chan int {
 	var wg sync.WaitGroup
 	out := make(chan int)
 
-	output := func(c <-chan int) {
-		for n := range c {
+	output := func(fraction <-chan int) {
+		defer wg.Done()
+		for value := range fraction {
 			select {
-			case out <- n:
-			//This two crapshoots here will trigger this "select" case
-			// done <- struct{}{}
-			// done <- struct{}{}
+			case out <- value:
 			case <-done:
+				return
 			}
 		}
-		wg.Done()
 	}
-	wg.Add(len(fraction))
-	for _, channel := range fraction {
+
+	wg.Add(len(fractions))
+
+	//this will give out 1 set of answer, all channels are packed into this one channel
+	// go func() {
+	// 	for _, channel := range fractions {
+	// 		output(channel)
+	// 	}
+	// }()
+
+	//but this will give out multiple set of answer, each channel will be handled on its own channel
+	for _, channel := range fractions {
 		go output(channel)
 	}
 
@@ -56,16 +72,15 @@ func merge(done <-chan struct{}, fraction ...<-chan int) <-chan int {
 }
 
 func main() {
-	fraction1 := sq(gen(2, 3))
-	fraction2 := sq(gen(4, 5))
+	done := make(chan struct{})
+	defer close(done)
 
-	done := make(chan struct{}, 2)
-	out := merge(done, fraction1, fraction2)
-	fmt.Println(<-out)
+	fraction1 := sq(done, gen(done, 1, 2))
+	fraction2 := sq(done, gen(done, 3, 4))
 
-	done <- struct{}{}
-	done <- struct{}{}
-	// for value := range merge(fraction1, fraction2) {
-	// 	fmt.Println(value)
-	// }
+	wholePiece := merge(done, fraction1, fraction2)
+
+	for value := range wholePiece {
+		fmt.Println(value)
+	}
 }
