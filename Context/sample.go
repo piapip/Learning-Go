@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"time"
 )
 
 func main() {
@@ -17,7 +18,7 @@ func main() {
 		out := make(chan int)
 		n := 1
 		go func() {
-			// defer close(out) where is this line?
+			defer close(out)
 			for {
 				select {
 				case out <- n:
@@ -40,13 +41,40 @@ func main() {
 	//	|                            |
 	//	|                            |
 	//	==============================
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx1, cancel1 := context.WithCancel(context.Background())
+	defer cancel1()
 
-	for value := range gen(ctx) {
+	for value := range gen(ctx1) {
 		fmt.Println(value)
 		if value == 5 {
 			break
 		}
 	}
+
+	d := time.Now().Add(50 * time.Millisecond)
+	ctx2, cancel2 := context.WithDeadline(context.Background(), d)
+	defer cancel2()
+
+	select {
+	case <-time.After(1 * time.Second):
+		fmt.Println("Overslept")
+	case <-ctx2.Done():
+		fmt.Println(ctx2.Err())
+	}
+
+	type favContextKey string
+
+	f := func(ctx context.Context, k favContextKey) {
+		if v := ctx.Value(k); v != nil {
+			fmt.Println("Found value: ", v)
+			return
+		}
+		fmt.Println("Key not found: ", k)
+	}
+
+	k := favContextKey("Language")
+	ctx := context.WithValue(context.Background(), k, "Go")
+	f(ctx, k)
+	f(ctx, favContextKey("Color"))
+
 }
