@@ -1,1 +1,5 @@
 each context.Context should represent for only one data query, not for an entire database object
+
+Page 27:
+i++
+If your context is a goroutine that doesn't expose i to other goroutines, then this code is atomic.
