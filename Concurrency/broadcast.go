@@ -5,7 +5,7 @@ import (
 	"sync"
 )
 
-func testSync() {
+func testBroadCast() {
 	type Button struct {
 		Clicked *sync.Cond
 	}
