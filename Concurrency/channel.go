@@ -2,72 +2,72 @@ package main
 
 import (
 	"fmt"
-	"sync"
+	"time"
 )
 
 func preventGoroutineLeak() {
 
-	// doWork := func(done <-chan interface{}, strings <-chan string) <-chan interface{} {
-	// 	terminated := make(chan interface{})
-	// 	go func() {
-	// 		defer fmt.Println("doWork exited.")
-	// 		defer close(terminated)
-	// 		for {
-	// 			select {
-	// 			case s := <-strings:
-	// 				s = s + " 1"
-	// 			case <-done:
-	// 				fmt.Println("Got here")
-	// 				return
-	// 			}
-	// 		}
-	// 	}()
-	// 	return terminated
-	// }
-
-	// done := make(chan interface{})
-	// terminated := doWork(done, nil)
-
-	// go func() {
-	// 	time.Sleep(1 * time.Second)
-	// 	fmt.Println("Canceling doWork goroutine...")
-	// 	close(done)
-	// }()
-
-	// <-terminated
-	// fmt.Println("Done")
-
-	doWork := func(lock *sync.Mutex, strings <-chan string) <-chan interface{} {
-		complete := make(chan interface{})
+	doWork := func(done <-chan interface{}, strings <-chan string) <-chan interface{} {
+		terminated := make(chan interface{})
 		go func() {
-			lock.Lock()
-			defer lock.Unlock()
 			defer fmt.Println("doWork exited.")
-			defer close(complete)
-			for s := range strings {
-				fmt.Println(s)
-				s = s + " 1"
+			defer close(terminated)
+			for {
+				select {
+				case s := <-strings:
+					s = s + " 1"
+				case <-done:
+					fmt.Println("Got here")
+					return
+				}
 			}
 		}()
-
-		return complete
+		return terminated
 	}
 
-	strings := make(chan string)
-	var wg sync.WaitGroup
-	var lock sync.Mutex
-	wg.Add(1)
+	done := make(chan interface{})
+	terminated := doWork(done, nil)
+
 	go func() {
-		defer wg.Done()
-		defer close(strings)
-		strings <- "Hello"
-		strings <- "world"
+		time.Sleep(1 * time.Second)
+		fmt.Println("Canceling doWork goroutine...")
+		close(done)
 	}()
 
-	channel := doWork(&lock, strings)
+	<-terminated
+	fmt.Println("Done")
 
-	fmt.Println(<-channel)
-	fmt.Println("done")
+	// doWork := func(lock *sync.Mutex, strings <-chan string) <-chan interface{} {
+	// 	complete := make(chan interface{})
+	// 	go func() {
+	// 		lock.Lock()
+	// 		defer lock.Unlock()
+	// 		defer fmt.Println("doWork exited.")
+	// 		defer close(complete)
+	// 		for s := range strings {
+	// 			fmt.Println(s)
+	// 			s = s + " 1"
+	// 		}
+	// 	}()
 
-	wg.Wait()
+	// 	return complete
+	// }
+
+	// strings := make(chan string)
+	// var wg sync.WaitGroup
+	// var lock sync.Mutex
+	// wg.Add(1)
+	// go func() {
+	// 	defer wg.Done()
+	// 	defer close(strings)
+	// 	strings <- "Hello"
+	// 	strings <- "world"
+	// }()
+
+	// channel := doWork(&lock, strings)
+
+	// fmt.Println(<-channel)
+	// fmt.Println("done")
+
+	// wg.Wait()
 }
