@@ -15,7 +15,7 @@ func preventGoroutineLeak() {
 			for {
 				select {
 				case s := <-strings:
-					s = s + " 1"
+					terminated <- s + " 1"
 				case <-done:
 					fmt.Println("Got here")
 					return
@@ -26,8 +26,16 @@ func preventGoroutineLeak() {
 	}
 
 	done := make(chan interface{})
-	terminated := doWork(done, nil)
 
+	strings := make(chan string)
+	go func() {
+		strings <- "Hello"
+		strings <- "world"
+	}()
+
+	terminated := doWork(done, strings)
+
+	// terminated := doWork(done, nil)
 	go func() {
 		time.Sleep(1 * time.Second)
 		fmt.Println("Canceling doWork goroutine...")
@@ -65,9 +73,9 @@ func preventGoroutineLeak() {
 	// }()
 
 	// channel := doWork(&lock, strings)
+	// wg.Wait()
 
 	// fmt.Println(<-channel)
 	// fmt.Println("done")
 
-	// wg.Wait()
 }
