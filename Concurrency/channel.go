@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func test() {
+func testTryCatch() {
 	type Result struct {
 		Error    error
 		Response *http.Response

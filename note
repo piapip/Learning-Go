@@ -10,3 +10,15 @@ type Result struct {
     Error    error
     Response interface{} //change this one
 }
+
+Page 162:
+Pipeline is nothing too amazing tbh. It's just a bunch of functions return the same type of value, so the function can be "recycled" or "called" by another function 
+as variable including itself. One easy example: fibonacci without recursive. 2 types: stream process and batch process
+
+Batch process: 
+The function returns a batch, an array of values. Increase scalability, though it will eat up more memory initially, but it makes your works a lot more easier 
+later on. (Because everything the function is triggered, it will load the entire *batch* that you just pass into them)
+
+Stream process:
+The function returns a single individual, it will greatly reduce the memory required (well, most of the time). But it will render the scalability. 
+Not recommended tbh.
