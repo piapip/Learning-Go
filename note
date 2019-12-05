@@ -22,3 +22,7 @@ later on. (Because everything the function is triggered, it will load the entire
 Stream process:
 The function returns a single individual, it will greatly reduce the memory required (well, most of the time). But it will render the scalability. 
 Not recommended tbh.
+
+Multiple functions can read from the same channel until that channel is closed; this is called fan-out.
+A function can read from multiple inputs and proceed until all are closed by multiplexing the input channels onto a single channel that's closed when 
+all the inputs are closed. This is called fan-in.
