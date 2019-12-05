@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 	"time"
 )
 
@@ -15,6 +16,7 @@ func preventGoroutineLeak() {
 			for {
 				select {
 				case s := <-strings:
+					fmt.Println(s)
 					terminated <- s + " 1"
 				case <-done:
 					fmt.Println("Got here")
@@ -34,48 +36,40 @@ func preventGoroutineLeak() {
 	}()
 
 	terminated := doWork(done, strings)
-
 	// terminated := doWork(done, nil)
+
 	go func() {
 		time.Sleep(1 * time.Second)
 		fmt.Println("Canceling doWork goroutine...")
 		close(done)
 	}()
 
-	<-terminated
+	fmt.Println("terminated: ", <-terminated)
 	fmt.Println("Done")
+}
 
-	// doWork := func(lock *sync.Mutex, strings <-chan string) <-chan interface{} {
-	// 	complete := make(chan interface{})
-	// 	go func() {
-	// 		lock.Lock()
-	// 		defer lock.Unlock()
-	// 		defer fmt.Println("doWork exited.")
-	// 		defer close(complete)
-	// 		for s := range strings {
-	// 			fmt.Println(s)
-	// 			s = s + " 1"
-	// 		}
-	// 	}()
-
-	// 	return complete
-	// }
-
-	// strings := make(chan string)
-	// var wg sync.WaitGroup
-	// var lock sync.Mutex
-	// wg.Add(1)
-	// go func() {
-	// 	defer wg.Done()
-	// 	defer close(strings)
-	// 	strings <- "Hello"
-	// 	strings <- "world"
-	// }()
-
-	// channel := doWork(&lock, strings)
-	// wg.Wait()
-
-	// fmt.Println(<-channel)
-	// fmt.Println("done")
-
+func test() {
+	newRandStream := func(done <-chan interface{}) <-chan int {
+		randStream := make(chan int)
+		go func() {
+			defer fmt.Println("newRandStream closure exited.")
+			defer close(randStream)
+			for {
+				select {
+				case randStream <- rand.Int():
+				case <-done:
+					return
+				}
+			}
+		}()
+		return randStream
+	}
+	done := make(chan interface{})
+	randStream := newRandStream(done)
+	fmt.Println("3 random ints:")
+	for i := 1; i <= 3; i++ {
+		fmt.Printf("%d: %d\n", i, <-randStream)
+	}
+	close(done)
+	time.Sleep(1 * time.Second)
 }
