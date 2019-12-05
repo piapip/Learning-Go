@@ -3,3 +3,10 @@ each context.Context should represent for only one data query, not for an entire
 Page 27:
 i++
 If your context is a goroutine that doesn't expose i to other goroutines, then this code is atomic.
+
+Page 158: 
+Golang doesn't have throw/catch mechanic so you need to build a struct if you want to keep track of possible errors:
+type Result struct {
+    Error    error
+    Response interface{} //change this one
+}

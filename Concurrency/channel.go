@@ -3,11 +3,51 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"net/http"
 	"time"
 )
 
 func test() {
+	type Result struct {
+		Error    error
+		Response *http.Response
+	}
+	checkStatus := func(done <-chan interface{}, urls ...string) <-chan Result {
+		results := make(chan Result)
+		go func() {
+			defer close(results)
 
+			for _, url := range urls {
+				var result Result
+				resp, err := http.Get(url)
+				result = Result{Error: err, Response: resp}
+				select {
+				case <-done:
+					return
+				case results <- result:
+				}
+			}
+		}()
+		return results
+	}
+
+	done := make(chan interface{})
+	defer close(done)
+
+	errCount := 0
+	urls := []string{"a", "https://www.google.com", "b", "c", "d"}
+	for result := range checkStatus(done, urls...) {
+		if result.Error != nil {
+			fmt.Println("Error: ", result.Error)
+			errCount++
+			if errCount >= 3 {
+				fmt.Println("Too many mistakes, breaking!")
+				break
+			}
+			continue
+		}
+		fmt.Println("Response: ", result.Response.Status)
+	}
 }
 
 func testOrChannel() {
@@ -51,12 +91,12 @@ func testOrChannel() {
 	}
 
 	start := time.Now()
-	<-or(
+	fmt.Println(<-or(
 		sig(2*time.Hour),
 		sig(5*time.Minute),
 		sig(1*time.Second),
 		sig(1*time.Hour),
-	)
+	))
 	fmt.Println("done after ", time.Since(start))
 }
 
