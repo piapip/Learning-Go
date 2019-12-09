@@ -1,8 +1,97 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"math/rand"
+)
 
 func test() {
+	repeatFn := func(done <-chan interface{}, fn func() interface{}) <-chan interface{} {
+		valueStream := make(chan interface{})
+		go func() {
+			defer close(valueStream)
+			for {
+				select {
+				case <-done:
+					return
+				case valueStream <- fn():
+				}
+			}
+		}()
+		return valueStream
+	}
+
+	take := func(done <-chan interface{}, valueStream <-chan interface{}, num int) <-chan interface{} {
+		takeStream := make(chan interface{})
+		go func() {
+			defer close(takeStream)
+			for i := 0; i < num; i++ {
+				select {
+				case <-done:
+					return
+				case takeStream <- <-valueStream:
+				}
+			}
+		}()
+		return takeStream
+	}
+
+	rd := func() interface{} {
+		return rand.Int()
+	}
+
+	done := make(chan interface{})
+	defer close(done)
+
+	for num := range take(done, repeatFn(done, rd), 10) {
+		fmt.Println(num)
+	}
+}
+
+func testInfinite1() {
+	repeat := func(done <-chan interface{}, values ...int) <-chan interface{} {
+		valueStream := make(chan interface{})
+		go func() {
+			defer close(valueStream)
+			for { //this infinite loop indicator is the difference.
+				fmt.Println("yoyo")
+				for _, v := range values {
+					select {
+					case <-done:
+						return
+					case valueStream <- v:
+					}
+				}
+			}
+		}()
+		return valueStream
+	}
+
+	take := func(done <-chan interface{}, valueStream <-chan interface{}, num int) <-chan interface{} {
+		takeStream := make(chan interface{})
+		go func() {
+			defer close(takeStream)
+			for i := 0; i < num; i++ {
+				select {
+				case <-done:
+					return
+				case takeStream <- <-valueStream:
+				}
+			}
+		}()
+		return takeStream
+	}
+
+	done := make(chan interface{})
+	defer close(done)
+
+	for num := range take(done, repeat(done, 1, 1), 10) {
+		fmt.Printf("%v ", num)
+	}
+	fmt.Printf("\n")
+}
+
+func testFirstGenerator() {
 	generator := func(done <-chan interface{}, integers ...int) <-chan int {
 		intStream := make(chan int)
 		go func() {

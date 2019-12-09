@@ -28,3 +28,7 @@ A function can read from multiple inputs and proceed until all are closed by mul
 all the inputs are closed. This is called fan-in.
 
 Page 169-170 is important.
+
+interface{} is not any type. It will be downcast to the first type that it's assigned to.
+
+Why is using empty interface a taboo in golang?
