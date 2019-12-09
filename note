@@ -26,3 +26,5 @@ Not recommended tbh.
 Multiple functions can read from the same channel until that channel is closed; this is called fan-out.
 A function can read from multiple inputs and proceed until all are closed by multiplexing the input channels onto a single channel that's closed when 
 all the inputs are closed. This is called fan-in.
+
+Page 169-170 is important.

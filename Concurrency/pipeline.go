@@ -8,6 +8,7 @@ func test() {
 		go func() {
 			defer close(intStream)
 			for _, i := range integers {
+				// fmt.Println("Received ", i)
 				select {
 				case <-done:
 					return
@@ -49,12 +50,16 @@ func test() {
 	}
 
 	done := make(chan interface{})
-	defer close(done)
+	// defer close(done)
 
 	intStream := generator(done, 1, 2, 3, 4)
 	pipeline := multiply(done, add(done, multiply(done, intStream, 2), 1), 2)
 	for v := range pipeline {
 		fmt.Println(v)
+		if v == 6 {
+			fmt.Println(<-intStream)
+			close(done)
+		}
 	}
 }
 
