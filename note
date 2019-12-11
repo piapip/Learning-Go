@@ -23,10 +23,6 @@ Stream process:
 The function returns a single individual, it will greatly reduce the memory required (well, most of the time). But it will render the scalability. 
 Not recommended tbh.
 
-Multiple functions can read from the same channel until that channel is closed; this is called fan-out.
-A function can read from multiple inputs and proceed until all are closed by multiplexing the input channels onto a single channel that's closed when 
-all the inputs are closed. This is called fan-in.
-
 Page 169-170 is important.
 
 interface{} is not any type. It will be downcast to the first type that it's assigned to.
@@ -40,3 +36,13 @@ the code will return a compile warning in (2) (if you write doSomething( a []int
 	for i, v := range names {
 	    vals[i] = v
     }
+
+Why is it not recommended to use {}interface?
+
+In generators, it's fine to use generic indicator (the chan interface{}). Though, you can double the speed with specific indicator (like chan int or chan string) 
+but the difference is negligible.
+
+Fan-out is a term to describe the process of starting multiple goroutines to handle input from the pipeline, and fan-in is a term to describe the process of
+combining multiple results into one channel. Use fanning if both of this requirements are met:
+One of the stages in your pipeline doesn’t rely on values that the stage had calculated before.
+And it takes a long time to run.

@@ -5,7 +5,7 @@ import (
 	"math/rand"
 )
 
-func test() {
+func testInfiniteRand() {
 	repeatFn := func(done <-chan interface{}, fn func() interface{}) <-chan interface{} {
 		valueStream := make(chan interface{})
 		go func() {
