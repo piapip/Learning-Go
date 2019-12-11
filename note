@@ -30,5 +30,13 @@ all the inputs are closed. This is called fan-in.
 Page 169-170 is important.
 
 interface{} is not any type. It will be downcast to the first type that it's assigned to.
-
-Why is using empty interface a taboo in golang?
+A pointer type can access the methods of its associated value type, but not vice versa
+(d Dog)doSomething() int {} => (*aDog).doSomething(); OK
+(d *Dog)doSomething() int {} => aDog.doSomething(); FAIL
+You can use doSomething(a ...interface{}) (1) but you should not use doSomething(a []interface{}) (2) because 
+the code can run properly in (1) (if you write doSomething(a int, b string, c bool)) but
+the code will return a compile warning in (2) (if you write doSomething( a []int)) Gotta convert everything of that a to interface first
+    vals := make([]interface{}, len(names))
+	for i, v := range names {
+	    vals[i] = v
+    }

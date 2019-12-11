@@ -52,20 +52,19 @@ func testAnimalInterface() {
 	}
 }
 
-//ReadCloser a test interface
-type ReadCloser interface {
-	Read(b []byte) (n int, err error)
-	Close()
+//PrintThis just a test
+func PrintThis(v []interface{}) {
+	for _, element := range v {
+		fmt.Println(element)
+	}
 }
 
-//ReadAndClose is just a test function for ReadCloser interface, and struct with Read and Close function can be passed into this function
-func ReadAndClose(r ReadCloser, buf []byte) (n int, err error) {
-	var nr int
-	for len(buf) > 0 && err != nil {
-		nr, err = r.Read(buf)
-		n += nr
-		buf = buf[nr:]
-	}
-	r.Close()
-	return n, err
+func aFailedTest() {
+	names := []string{"Yoyoyo", "pipi"}
+	// vals := make([]interface{}, len(names))
+	// for i, v := range names {
+	// 	vals[i] = v
+	// }
+	// PrintThis(vals)
+	PrintThis(names)
 }
