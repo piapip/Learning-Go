@@ -50,7 +50,19 @@ One of the stages in your pipeline doesn’t rely on values that the stage had c
 And it takes a long time to run.
 
 Fan-in is like a double-edge knife. Could speed up the process but still might cause unpleasant experience because it takes over all cores of the CPU which means
-it will lower other applications quality which is not a good thing. (Try playing hots on a toaster and you'll see). Nothing is free, it's just a trade-off.
+it will lower other applications quality which is not a good thing. (Try playing hots on a toaster and you'll see). Nothing is free, it's just a trade-off. (
+Workflow:
+Chan1:              Chan2:                  Time consumed of non-fanning: 2(***************) + some stupid (doesn't matter material)
+**   1              **      1               ( [**1] + [**2] (chan2 [**1] might be close to finish for now) [***************] +  [**2] + [***************] + the rest)
+**   2              **      2               Time consumed of fanning    :  (***************) + some stupid (doesn't matter material, a lil bit more than the non-fanning
+**************      **************                                          but unsignificant)
+**                  **
+**                  **
+**                  **
+**                  **
+**                  **
+**                  **
+)
 
 So to prevent goroutine leak, you do this in every goroutine: 
 instead of:
@@ -99,4 +111,6 @@ or-channel = all the SIGNAL that other channels contain and SHARE THAT SIGNAL to
 so when channel1 is closed, every channel that is linked to the or-channel as well as the or-channel will be closed, but the fan-in channel won't be.
 
 Can't see much use of bridge channel. If you want to a stream around,
-EX: chanStream <- stream. Remember to close stream first, otherwise they
+EX: chanStream <- stream. Remember to close stream first, otherwise they will just stand there and block off the flow.
+
+Read 196 for somthing about bufio and queueing.

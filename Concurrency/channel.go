@@ -26,8 +26,9 @@ func testBridge() {
 					}
 					select {
 					case valStream <- v:
-					case <-done:
+					case <-done: //it's to reconfirm
 					}
+					//valStream <- v
 				}
 			}
 		}()
@@ -39,7 +40,6 @@ func testBridge() {
 		go func() {
 			defer close(valStream)
 			var stream <-chan interface{}
-			// stream := make(chan interface{})
 			for {
 				select {
 				case maybeStream, ok := <-chanStream:
@@ -68,6 +68,7 @@ func testBridge() {
 			for i := 0; i < 10; i++ {
 				stream := make(chan interface{}, 1)
 				stream <- i
+				//if you forget to close the stream, it will stuck in the next iterator, it can't create a new one as the old one is still up and running.
 				close(stream)
 				chanStream <- stream
 			}
