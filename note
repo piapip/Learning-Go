@@ -114,3 +114,8 @@ Can't see much use of bridge channel. If you want to a stream around,
 EX: chanStream <- stream. Remember to close stream first, otherwise they will just stand there and block off the flow.
 
 Read 196 for somthing about bufio and queueing.
+
+Context explanation: 201
+
+All context function will always receive a parent Context and split out another Context.
+context.Deadline: 215
