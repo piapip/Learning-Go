@@ -7,14 +7,29 @@ import (
 	"time"
 )
 
-func test() {
+func testContextValue() {
+	type ctxKey int
+
+	const (
+		ctxUserID ctxKey = iota
+		ctxAuthToken
+	)
+
+	UserID := func(c context.Context) string {
+		return c.Value(ctxUserID).(string)
+	}
+
+	AuthToken := func(c context.Context) string {
+		return c.Value(ctxAuthToken).(string)
+	}
+
 	handleResponse := func(ctx context.Context) {
-		fmt.Printf("handling response for %v (%v)\n", ctx.Value("userID"), ctx.Value("authToken"))
+		fmt.Printf("handling response for %v (%v)\n", UserID(ctx), AuthToken(ctx))
 	}
 
 	processRequest := func(userID, authToken string) {
-		ctx := context.WithValue(context.Background(), interface{}("userID"), userID) //using interface to suppresss the warning
-		ctx = context.WithValue(ctx, interface{}("authToken"), authToken)
+		ctx := context.WithValue(context.Background(), ctxUserID, userID)
+		ctx = context.WithValue(ctx, ctxAuthToken, authToken)
 		handleResponse(ctx)
 	}
 

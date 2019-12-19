@@ -119,3 +119,8 @@ Context explanation: 201
 
 All context function will always receive a parent Context and split out another Context.
 context.Deadline: 215
+context usage: 218 + 219, sounds like making loose cohesion.
+
+iota: https://yourbasic.org/golang/iota/
+
+StackTrace: 224

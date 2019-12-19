@@ -7,10 +7,6 @@ import (
 	"time"
 )
 
-func test() {
-
-}
-
 func testBridge() {
 	orDone := func(done <-chan interface{}, c <-chan interface{}) <-chan interface{} {
 		valStream := make(chan interface{})
