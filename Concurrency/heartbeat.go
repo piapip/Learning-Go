@@ -44,12 +44,16 @@ func test() {
 
 	//Without heartbeat, can't control the flow, it becomes nondeterministic
 	// theBadTest := func(t *testing.T) {
+	//it's not that this kind of test down there won't work, it's that it can't
+	//give out the best answer it could give. The good version could though.
+	//Can't recreate, just pure understanding
 	theBadTest := func() {
 		done := make(chan interface{})
 		defer close(done)
 
 		intSlice := []int{0, 1, 2, 3, 5}
 		_, results := doWork(done, intSlice...)
+
 		for i, expected := range intSlice {
 			fmt.Println("In test: ", expected)
 			select {
@@ -71,7 +75,7 @@ func test() {
 			case <-time.After(1 * time.Second):
 				// t.Fatal("test timed out")
 				fmt.Println("test timed out")
-				return
+				break
 			}
 		}
 	}
@@ -83,23 +87,55 @@ func test() {
 	// theGoodTest := func() {
 	// 	done := make(chan interface{})
 	// 	defer close(done)
-	// 	intSlice := []int{0, 1, 2, 3, 5}
-	// 	// _, results := doWork(done, intSlice...)
-	// 	_, results := doWork(done, intSlice...)
 
-	// 	// <-heartbeat //remember even though it only has 1 slot, so it's blocking the flow of the doWork.
-	// 	//so the doWork is not actually finished yet, it's pending for the pump signal
-	// 	i := 0
-	// 	for r := range results {
-	// 		fmt.Println("In test: r: ", r, " expected: ", intSlice[i])
-	// 		if expected := intSlice[i]; r != expected {
-	// 			// t.Errorf("index %v: expected %v, but received %v,", i, expected,
-	// 			// 	r)
-	// 			fmt.Printf("index %v: expected %v, but received %v,", i, expected,
-	// 				r)
+	// 	intSlice := []int{0, 1, 2, 3, 5}
+	// 	heartbeat, results := doWork(done, intSlice...)
+	// 	// _, results := doWork(done, intSlice...)
+	// 	fmt.Println("Yo1")
+	// 	<-heartbeat //remember even though it only has 1 slot, so it's blocking the flow of the doWork.
+	// 	//so the doWork is not actually finished yet, it's pending for the pump signal. When the pump signal
+	// 	//is called, everything will continue doing their job.
+
+	// 	//still work without heartbeat but the mechanism is still the same, the doWork is still blocked,
+	// 	//until that _ is called out, it's an empty space for the heartbeatstream to spit out its beats.
+
+	// 	for i, expected := range intSlice {
+	// 		fmt.Println("In test: ", expected)
+	// 		select {
+	// 		case r := <-results:
+	// 			if r != expected {
+	// 				fmt.Printf("index %v: expected %v, but received %v,",
+	// 					i,
+	// 					expected,
+	// 					r)
+
+	// 				return
+	// 				// t.Errorf(
+	// 				// 	"index %v: expected %v, but received %v,",
+	// 				// 	i,
+	// 				// 	expected,
+	// 				// 	r,
+	// 				// )
+	// 			}
+	// 		case <-time.After(1 * time.Second):
+	// 			// t.Fatal("test timed out")
+	// 			fmt.Println("test timed out")
+	// 			break
 	// 		}
-	// 		i++
 	// 	}
+
+	// 	// i := 0
+	// 	// for r := range results {
+	// 	// 	fmt.Println("In test: r: ", r, " expected: ", intSlice[i])
+	// 	// 	if expected := intSlice[i]; r != expected {
+	// 	// 		// t.Errorf("index %v: expected %v, but received %v,", i, expected,
+	// 	// 		// 	r)
+	// 	// 		fmt.Printf("index %v: expected %v, but received %v,", i, expected,
+	// 	// 			r)
+	// 	// 		return
+	// 	// 	}
+	// 	// 	i++
+	// 	// }
 	// }
 	// theGoodTest()
 }
