@@ -3,11 +3,10 @@ package main
 import (
 	"fmt"
 	"math/rand"
-	"testing"
 	"time"
 )
 
-func testGenInt() {
+func test() {
 	doWork := func(done <-chan interface{}, nums ...int) (<-chan interface{}, <-chan int) {
 		heartbeatStream := make(chan interface{}, 1)
 		intStream := make(chan int)
@@ -34,6 +33,7 @@ func testGenInt() {
 			}
 
 			for _, n := range nums {
+				fmt.Println("In loop: ", n)
 				sendPulse()
 				sendResult(n)
 			}
@@ -43,48 +43,65 @@ func testGenInt() {
 	}
 
 	//Without heartbeat, can't control the flow, it becomes nondeterministic
-	theBadTest = func(t *testing.T) {
+	// theBadTest := func(t *testing.T) {
+	theBadTest := func() {
 		done := make(chan interface{})
 		defer close(done)
 
 		intSlice := []int{0, 1, 2, 3, 5}
 		_, results := doWork(done, intSlice...)
 		for i, expected := range intSlice {
+			fmt.Println("In test: ", expected)
 			select {
 			case r := <-results:
 				if r != expected {
-					t.Errorf(
-						"index %v: expected %v, but received %v,",
+					fmt.Printf("index %v: expected %v, but received %v,",
 						i,
 						expected,
-						r,
-					)
+						r)
+
+					return
+					// t.Errorf(
+					// 	"index %v: expected %v, but received %v,",
+					// 	i,
+					// 	expected,
+					// 	r,
+					// )
 				}
 			case <-time.After(1 * time.Second):
-				t.Fatal("test timed out")
+				// t.Fatal("test timed out")
+				fmt.Println("test timed out")
+				return
 			}
 		}
 	}
+
+	theBadTest()
 
 	//use heartbeat, 1 heartbeat means 1 result, flow becomes easy to control
-	theGoodTest = func(t *testing.T) {
-		done := make(chan interface{})
-		defer close(done)
-		intSlice := []int{0, 1, 2, 3, 5}
-		// _, results := doWork(done, intSlice...)
-		heartbeat, results := doWork(done, intSlice...)
+	// theGoodTest = func(t *testing.T) {
+	// theGoodTest := func() {
+	// 	done := make(chan interface{})
+	// 	defer close(done)
+	// 	intSlice := []int{0, 1, 2, 3, 5}
+	// 	// _, results := doWork(done, intSlice...)
+	// 	_, results := doWork(done, intSlice...)
 
-		<-heartbeat //remember even though it only has 1 slot, so it's blocking the flow of the doWork.
-		//so the doWork is not actually finished yet, it's pending for the pump signal
-		i := 0
-		for r := range results {
-			if expected := intSlice[i]; r != expected {
-				t.Errorf("index %v: expected %v, but received %v,", i, expected,
-					r)
-			}
-			i++
-		}
-	}
+	// 	// <-heartbeat //remember even though it only has 1 slot, so it's blocking the flow of the doWork.
+	// 	//so the doWork is not actually finished yet, it's pending for the pump signal
+	// 	i := 0
+	// 	for r := range results {
+	// 		fmt.Println("In test: r: ", r, " expected: ", intSlice[i])
+	// 		if expected := intSlice[i]; r != expected {
+	// 			// t.Errorf("index %v: expected %v, but received %v,", i, expected,
+	// 			// 	r)
+	// 			fmt.Printf("index %v: expected %v, but received %v,", i, expected,
+	// 				r)
+	// 		}
+	// 		i++
+	// 	}
+	// }
+	// theGoodTest()
 }
 
 //this thing sends out results instantly... Quite weird for a goroutine stuff. Good for testing they say.
