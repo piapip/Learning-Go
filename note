@@ -124,3 +124,8 @@ context usage: 218 + 219, sounds like making loose cohesion.
 iota: https://yourbasic.org/golang/iota/
 
 StackTrace: 224
+
+Heartbeats that occur on a time interval are useful for concurrent code that might be waiting for something else to happen for it to process a unit of work. 
+Because you don’t know when that work might come in, your goroutine might be sitting around for a while waiting for something to happen. 
+A heartbeat is a way to signal to its listeners that everything is well, and that the silence is expected.
+250+251 for further details.
