@@ -129,3 +129,15 @@ Heartbeats that occur on a time interval are useful for concurrent code that mig
 Because you don’t know when that work might come in, your goroutine might be sitting around for a while waiting for something to happen. 
 A heartbeat is a way to signal to its listeners that everything is well, and that the silence is expected.
 250+251 for further details.
+
+In fact, there’s a name for a section of your program that needs exclusive access to a shared resource. This is called a critical section. In this example,
+we have three critical sections:
+Our goroutine, which is incrementing the data variables.
+Our if statement, which checks whether the value of data is 0.
+Our fmt.Printf statement, which retrieves the value of data for output.
+
+In Go, goroutines are tasks. If a goroutine spawns other goroutines then it's spawning tasks, if a goroutine spawns a non-goroutine function then it's just 
+minding its own business.
+Everything after a goroutine is called is the continuation.
+Go’s work-stealing algorithm enqueues and steals continuations. 
+When a thread of execution reaches an unrealized join point, the thread must pause execution and go fishing for a task to steal.
