@@ -13,6 +13,6 @@ func NewEmployee() *Employee {
 }
 
 //PrintEmployee something random
-func PrintEmployee(p *Employee) string {
+func (p *Employee) PrintEmployee() string {
 	return "Hello world!"
 }
